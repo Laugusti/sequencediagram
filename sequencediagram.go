@@ -83,7 +83,7 @@ func ParseFromText(s string) (*SequenceDiagram, error) {
 			msg := line[colonIndex+1:]
 			sd.Messages = append(sd.Messages, Message{from, to, msg})
 		default:
-			return nil, fmt.Errorf("Line %d: Syntax error.", i)
+			return nil, fmt.Errorf("Line %d: Syntax error.", i+1)
 		}
 	}
 	return sd, nil
