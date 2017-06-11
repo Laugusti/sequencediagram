@@ -59,10 +59,13 @@ func calcOffsets(sd *sequencediagram.Diagram) []offset {
 
 // calcShiftStartIndex calculates from which node to start shifting offsets based on the message
 func calcShiftStartIndex(message sequencediagram.Message) int {
-	shiftStart := message.To.Order
-	if message.IsSelfLoop() {
-		shiftStart += 1
-	} else if message.From.Order > message.To.Order {
+	var shiftStart int
+	switch message := message.(type) {
+	case sequencediagram.SelfMessage:
+		shiftStart = message.Self.Order + 1
+	case sequencediagram.ForwardMessage:
+		shiftStart = message.To.Order
+	case sequencediagram.BackwardMessage:
 		shiftStart = message.From.Order
 	}
 	return shiftStart
@@ -80,16 +83,16 @@ func calcShift(message sequencediagram.Message, offsets []offset) int {
 
 	// calculate shift based on message
 	var shift int
-	switch {
-	case message.IsSelfLoop():
+	switch message := message.(type) {
+	case sequencediagram.SelfMessage:
 		length += utf8.RuneCountInString(loop_middle + pad_between_loop_and_message + loop_message_end_pad)
-		offset1 := offsets[message.From.Order].getMiddle()
-		offset2 := offsets[message.From.Order+1].getMiddle()
+		offset1 := offsets[message.Self.Order].getMiddle()
+		offset2 := offsets[message.Self.Order+1].getMiddle()
 		diff := offset2 - offset1 - 1
 		if length > diff {
 			shift = length - diff
 		}
-	case message.From.Order < message.To.Order:
+	case sequencediagram.ForwardMessage:
 		length += utf8.RuneCountInString(arrow_start+box_arrow_left+box_arrow_right+arrow_body+arrow_forward_end) + 2*box_inside_pad
 		offset1 := offsets[message.From.Order].getMiddle()
 		offset2 := offsets[message.To.Order].getMiddle()
@@ -97,7 +100,7 @@ func calcShift(message sequencediagram.Message, offsets []offset) int {
 		if length > diff {
 			shift = length - diff
 		}
-	case message.From.Order > message.To.Order:
+	case sequencediagram.BackwardMessage:
 		length += utf8.RuneCountInString(arrow_backward_end+arrow_body+box_arrow_left+box_arrow_right+arrow_start) + 2*box_inside_pad
 		offset1 := offsets[message.To.Order].getMiddle()
 		offset2 := offsets[message.From.Order].getMiddle()
@@ -109,6 +112,18 @@ func calcShift(message sequencediagram.Message, offsets []offset) int {
 	return shift
 }
 
+func getMessageText(message sequencediagram.Message) string {
+	switch message := message.(type) {
+	case sequencediagram.SelfMessage:
+		return message.Msg
+	case sequencediagram.ForwardMessage:
+		return message.Msg
+	case sequencediagram.BackwardMessage:
+		return message.Msg
+	}
+	return ""
+}
+
 func splitMessage(message sequencediagram.Message) []string {
-	return strings.Split(message.Msg, "\\n")
+	return strings.Split(getMessageText(message), "\\n")
 }

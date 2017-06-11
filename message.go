@@ -1,18 +1,45 @@
 package sequencediagram
 
-type Message struct {
-	From *Node
-	To   *Node
-	Msg  string
+import "fmt"
+
+type Message interface {
+	MessageText() string
+	String() string
 }
 
-// TODO: change Message to interface and add implementation for
-// SelfMessage, ToMessage, FromMessage
+type simpleMessage struct {
+	Msg string
+}
+
+func (sm simpleMessage) MessageText() string {
+	return sm.Msg
+}
+
 type SelfMessage struct {
 	Self *Node
-	Msg  string
+	simpleMessage
 }
 
-func (m Message) IsSelfLoop() bool {
-	return m.From == m.To
+func (sm SelfMessage) String() string {
+	return fmt.Sprintf("%s->%s:%s", sm.Self.Name, sm.Self.Name, sm.Msg)
+}
+
+type ForwardMessage struct {
+	From *Node
+	To   *Node
+	simpleMessage
+}
+
+func (fm ForwardMessage) String() string {
+	return fmt.Sprintf("%s->%s:%s", fm.From.Name, fm.To.Name, fm.Msg)
+}
+
+type BackwardMessage struct {
+	From *Node
+	To   *Node
+	simpleMessage
+}
+
+func (bm BackwardMessage) String() string {
+	return fmt.Sprintf("%s->%s:%s", bm.From.Name, bm.To.Name, bm.Msg)
 }

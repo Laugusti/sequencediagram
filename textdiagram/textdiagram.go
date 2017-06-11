@@ -56,14 +56,23 @@ func (td *textDiagram) addHeaders(nodes []*sequencediagram.Node) {
 	td.text += strings.Join(headers, "\n") + "\n"
 }
 
+func (td *textDiagram) paddingForMessage(message sequencediagram.Message) string {
+	var pad string
+	switch message := message.(type) {
+	case sequencediagram.SelfMessage:
+		pad = strings.Repeat(" ", td.offsets[message.Self.Order].getMiddle()+utf8.RuneCountInString(box_vertical))
+	case sequencediagram.ForwardMessage:
+		pad = strings.Repeat(" ", td.offsets[message.From.Order].getMiddle()+utf8.RuneCountInString(box_vertical))
+	case sequencediagram.BackwardMessage:
+		pad = strings.Repeat(" ", td.offsets[message.To.Order].getMiddle()+utf8.RuneCountInString(box_vertical))
+	}
+	return pad
+}
+
 // addMessage adds the message the as text to the ascii diagram
 func (td *textDiagram) addMessage(message sequencediagram.Message) {
 	// pad with spaces
-	pad := strings.Repeat(" ", td.offsets[message.From.Order].getMiddle()+utf8.RuneCountInString(box_vertical))
-	// backward messages should use middle of 'to'
-	if message.From.Order > message.To.Order {
-		pad = strings.Repeat(" ", td.offsets[message.To.Order].getMiddle()+utf8.RuneCountInString(box_vertical))
-	}
+	pad := td.paddingForMessage(message)
 
 	text := td.getMessageAsText(message)
 	for _, line := range strings.Split(text, "\n") {
@@ -76,19 +85,19 @@ func (td *textDiagram) addMessage(message sequencediagram.Message) {
 // returns the text representation of the message
 func (td *textDiagram) getMessageAsText(message sequencediagram.Message) string {
 	var text string
-	switch {
-	case message.IsSelfLoop():
+	switch message := message.(type) {
+	case sequencediagram.SelfMessage:
 		text = selfLoop(message.Msg)
-	case message.From.Order < message.To.Order:
+	case sequencediagram.ForwardMessage:
 		text = td.toMessageText(message)
-	case message.From.Order > message.To.Order:
+	case sequencediagram.BackwardMessage:
 		text = td.fromMessageText(message)
 	}
 	return text
 }
 
 // returns the text representation of a 'to' message
-func (td *textDiagram) toMessageText(message sequencediagram.Message) string {
+func (td *textDiagram) toMessageText(message sequencediagram.ForwardMessage) string {
 	var text string
 	for i, line := range strings.Split(messageBox(message.Msg), "\n") {
 		// add the arrow on the 2nd line
@@ -105,7 +114,7 @@ func (td *textDiagram) toMessageText(message sequencediagram.Message) string {
 	return text
 }
 
-func (td *textDiagram) fromMessageText(message sequencediagram.Message) string {
+func (td *textDiagram) fromMessageText(message sequencediagram.BackwardMessage) string {
 	var text string
 	msgBox := messageBox(message.Msg)
 	// length = from_lifeline_index - to_lifeline_index - line_length
@@ -136,7 +145,7 @@ func (td *textDiagram) drawFullLifeline() {
 }
 
 // add lifeline to message text
-func (td *textDiagram) fillInLifeline(text string, m sequencediagram.Message) string {
+func (td *textDiagram) fillInLifeline(text string, message sequencediagram.Message) string {
 	// toggle lifeline
 	defer func() {
 		td.lifelineToggle = !td.lifelineToggle
@@ -145,23 +154,7 @@ func (td *textDiagram) fillInLifeline(text string, m sequencediagram.Message) st
 		return text
 	}
 
-	// get index start and end nodes
-	var startNode, endNode int
-	if m.IsSelfLoop() {
-		startNode = m.From.Order
-		endNode = startNode + 1
-		if endNode >= len(td.offsets) {
-			endNode = len(td.offsets) - 1
-		}
-	} else {
-		startNode = m.From.Order
-		endNode = m.To.Order
-		if startNode > endNode {
-			startNode, endNode = endNode, startNode
-		}
-	}
-	// use offsets to calculate range of message
-	startRange, endRange := td.offsets[startNode].getMiddle(), td.offsets[endNode].getMiddle()
+	startRange, endRange := td.getStartEndIndex(message)
 	// for each offset, draw lifeline if it is outside the range of the message
 	for _, o := range td.offsets {
 		index := o.getMiddle()
@@ -174,4 +167,24 @@ func (td *textDiagram) fillInLifeline(text string, m sequencediagram.Message) st
 		}
 	}
 	return text
+}
+
+// getStartEndIndex returns the start and end index of the Message
+func (td *textDiagram) getStartEndIndex(message sequencediagram.Message) (int, int) {
+	var startNode, endNode int
+	switch message := message.(type) {
+	case sequencediagram.SelfMessage:
+		startNode = message.Self.Order
+		endNode = startNode + 1
+		if endNode >= len(td.offsets) {
+			endNode = len(td.offsets) - 1
+		}
+	case sequencediagram.ForwardMessage:
+		startNode, endNode = message.From.Order, message.To.Order
+	case sequencediagram.BackwardMessage:
+		startNode, endNode = message.To.Order, message.From.Order
+	}
+
+	// use offsets to calculate range of message
+	return td.offsets[startNode].getMiddle(), td.offsets[endNode].getMiddle()
 }

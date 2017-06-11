@@ -44,7 +44,7 @@ func (sd *Diagram) GetOrderedNodes() []*Node {
 func (sd *Diagram) String() string {
 	var s string
 	for _, message := range sd.messages {
-		s += fmt.Sprintf("%s->%s:%s\n", message.From.Name, message.To.Name, message.Msg)
+		s += fmt.Sprintf("%s\n", message)
 	}
 	return s
 }
