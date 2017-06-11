@@ -8,7 +8,10 @@ import (
 
 // var titlePattern = regexp.MustCompile("^title .+$")
 // var notePattern = regexp.MustCompile("^note (right|left) of .+$")
-var messagePattern = regexp.MustCompile("^.+->.+:.+$")
+var (
+	messagePattern     = regexp.MustCompile("^.+->.+:.+$")
+	participantPattern = regexp.MustCompile("^participant (.+)$")
+)
 
 var arrowRegex = regexp.MustCompile("--?>>?")
 
@@ -24,6 +27,9 @@ func ParseFromText(s string) (*Diagram, error) {
 			to := sd.getOrCreateNode(message[1])
 			msg := message[2]
 			sd.messages = append(sd.messages, createMessage(from, to, arrow, msg))
+		case participantPattern.MatchString(line):
+			node := sd.getOrCreateNode(participantPattern.FindStringSubmatch(line)[1])
+			sd.messages = append(sd.messages, ParticipantMessage{node, noMessage{}})
 		default:
 			return nil, fmt.Errorf("Line %d: Syntax error.", i+1)
 		}

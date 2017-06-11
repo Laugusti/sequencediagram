@@ -7,6 +7,10 @@ type Message interface {
 	String() string
 }
 
+type noMessage struct{}
+
+func (nm noMessage) MessageText() string { return "" }
+
 type simpleMessage struct {
 	Msg string
 }
@@ -30,6 +34,15 @@ func (udm uniDirectionalMessage) arrow() string {
 		arrowEnd = ">>"
 	}
 	return arrowBody + arrowEnd
+}
+
+type ParticipantMessage struct {
+	Participant *Node
+	noMessage
+}
+
+func (pm ParticipantMessage) String() string {
+	return "participant " + pm.Participant.Name
 }
 
 type SelfMessage struct {
