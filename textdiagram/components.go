@@ -20,16 +20,21 @@ const (
 	arrow_body         = "─"
 	arrow_forward_end  = "▶"
 	arrow_backward_end = "◀"
+	arrow_vertical     = "│"
 
-	loop_top    = "────┐"
-	loop_middle = "    │"
-	loop_bottom = "◀───┘"
+	alt_arrow_start        = "--"
+	alt_arrow_body         = "-"
+	alt_arrow_forward_end  = ">"
+	alt_arrow_backward_end = "<"
+	alt_arrow_vertical     = "¦"
 
 	life_line = "│"
 )
 
 const (
-	box_inside_pad               = 1
+	box_inside_pad = 1
+
+	loop_body_length             = 3
 	pad_between_loop_and_message = ""
 	loop_message_end_pad         = " "
 )
@@ -65,12 +70,24 @@ func boxString(s string, padToHeight int) string {
 }
 
 // selfLoop text diagram of a arrow that loops back to self with message s
-func selfLoop(s string) string {
-	loop := loop_top + "\n"
-	for _, line := range strings.Split(s, "\\n") {
-		loop += loop_middle + pad_between_loop_and_message + line + loop_message_end_pad + "\n"
+func selfLoop(s string, altArrowBody, altArrowEnd bool) string {
+	loopTop := strings.Repeat(arrow_body, loop_body_length+1) + box_top_right
+	loopMiddle := strings.Repeat(" ", loop_body_length+1) + arrow_vertical
+	loopBottom := arrow_backward_end + strings.Repeat(arrow_body, loop_body_length) + box_bottom_right
+	if altArrowEnd {
+		loopBottom = strings.Replace(loopBottom, arrow_backward_end, alt_arrow_backward_end, 1)
 	}
-	loop += loop_bottom
+	if altArrowBody {
+		loopTop = strings.Replace(loopTop, arrow_body, alt_arrow_body, -1)
+		loopMiddle = strings.Replace(loopMiddle, arrow_vertical, alt_arrow_vertical, 1)
+		loopBottom = strings.Replace(loopBottom, arrow_body, alt_arrow_body, -1)
+
+	}
+	loop := loopTop + "\n"
+	for _, line := range strings.Split(s, "\\n") {
+		loop += loopMiddle + pad_between_loop_and_message + line + loop_message_end_pad + "\n"
+	}
+	loop += loopBottom
 	return loop
 }
 

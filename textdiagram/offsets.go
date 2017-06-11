@@ -85,7 +85,13 @@ func calcShift(message sequencediagram.Message, offsets []offset) int {
 	var shift int
 	switch message := message.(type) {
 	case sequencediagram.SelfMessage:
-		length += utf8.RuneCountInString(loop_middle + pad_between_loop_and_message + loop_message_end_pad)
+		length += utf8.RuneCountInString(arrow_backward_end+arrow_body+pad_between_loop_and_message+loop_message_end_pad) + loop_body_length
+		if message.AltArrowEnd {
+			length += utf8.RuneCountInString(alt_arrow_backward_end) - utf8.RuneCountInString(arrow_backward_end)
+		}
+		if message.AltArrowBody {
+			length += utf8.RuneCountInString(alt_arrow_body) - utf8.RuneCountInString(arrow_body)
+		}
 		offset1 := offsets[message.Self.Order].getMiddle()
 		offset2 := offsets[message.Self.Order+1].getMiddle()
 		diff := offset2 - offset1 - 1

@@ -87,25 +87,24 @@ func (td *textDiagram) getMessageAsText(message sequencediagram.Message) string 
 	var text string
 	switch message := message.(type) {
 	case sequencediagram.SelfMessage:
-		text = selfLoop(message.Msg)
+		text = selfLoop(message.Msg, message.AltArrowBody, message.AltArrowEnd)
 	case sequencediagram.ForwardMessage:
-		text = td.toMessageText(message)
+		text = td.forwardMessageAsText(message)
 	case sequencediagram.BackwardMessage:
-		text = td.fromMessageText(message)
+		text = td.backwardMessageAsText(message)
 	}
 	return text
 }
 
 // returns the text representation of a 'to' message
-func (td *textDiagram) toMessageText(message sequencediagram.ForwardMessage) string {
+func (td *textDiagram) forwardMessageAsText(message sequencediagram.ForwardMessage) string {
 	var text string
 	for i, line := range strings.Split(messageBox(message.Msg), "\n") {
 		// add the arrow on the 2nd line
 		// length = to_lifeline_index - from_lifeline_index - line_length
 		if i == 1 {
-			arrowBody := strings.Repeat(arrow_body,
-				getPadLength(td.offsets[message.From.Order].getMiddle(), td.offsets[message.To.Order].getMiddle(), line+arrow_start+arrow_forward_end))
-			line = arrow_start + line + arrowBody + arrow_forward_end
+			arrowLength := getPadLength(td.offsets[message.From.Order].getMiddle(), td.offsets[message.To.Order].getMiddle(), line+arrow_start+arrow_forward_end)
+			line = addArrowToLine(line, arrowLength, message.AltArrowBody, message.AltArrowEnd, false)
 		} else {
 			line = strings.Repeat(" ", utf8.RuneCountInString(arrow_start)) + line
 		}
@@ -114,7 +113,7 @@ func (td *textDiagram) toMessageText(message sequencediagram.ForwardMessage) str
 	return text
 }
 
-func (td *textDiagram) fromMessageText(message sequencediagram.BackwardMessage) string {
+func (td *textDiagram) backwardMessageAsText(message sequencediagram.BackwardMessage) string {
 	var text string
 	msgBox := messageBox(message.Msg)
 	// length = from_lifeline_index - to_lifeline_index - line_length
@@ -122,14 +121,37 @@ func (td *textDiagram) fromMessageText(message sequencediagram.BackwardMessage) 
 	for i, line := range strings.Split(msgBox, "\n") {
 		// add the arrow on the 2nd line
 		if i == 1 {
-			arrowBody := strings.Repeat(arrow_body, arrowLength)
-			line = arrow_backward_end + arrowBody + line + arrow_start
+			line = addArrowToLine(line, arrowLength, message.AltArrowBody, message.AltArrowEnd, true)
 		} else {
 			line = strings.Repeat(" ", arrowLength+utf8.RuneCountInString(arrow_backward_end)) + line
 		}
 		text += line + "\n"
 	}
 	return text
+}
+
+// add an arrow to the line
+func addArrowToLine(line string, arrowLength int, altArrowBody, altArrowEnd, backwards bool) string {
+	arrowStart := arrow_start
+	arrowBody := strings.Repeat(arrow_body, arrowLength)
+	if altArrowBody {
+		arrowStart = alt_arrow_start
+		arrowBody = strings.Repeat(alt_arrow_body, arrowLength)
+	}
+	if backwards {
+		arrowEnd := arrow_backward_end
+		if altArrowEnd {
+			arrowEnd = alt_arrow_backward_end
+		}
+		line = arrowEnd + arrowBody + line + arrowStart
+	} else {
+		arrowEnd := arrow_forward_end
+		if altArrowEnd {
+			arrowEnd = alt_arrow_forward_end
+		}
+		line = arrowStart + line + arrowBody + arrowEnd
+	}
+	return line
 }
 
 func (td *textDiagram) drawFullLifeline() {
