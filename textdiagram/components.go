@@ -28,7 +28,8 @@ const (
 	alt_arrow_backward_end = "<"
 	alt_arrow_vertical     = "¦"
 
-	life_line = "│"
+	life_line     = "│"
+	alt_life_line = "‖"
 )
 
 const (
@@ -91,7 +92,7 @@ func selfLoop(s string, altArrowBody, altArrowEnd bool) string {
 	return loop
 }
 
-// messageBox is similar boxString except it the walls of the 2nd line
+// messageBox is similar boxString except for the walls of the 2nd line
 func messageBox(s string) string {
 	box := strings.Split(boxString(s, 0), "\n")
 	for i, line := range box {

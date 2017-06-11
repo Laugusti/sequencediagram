@@ -36,13 +36,21 @@ func (udm uniDirectionalMessage) arrow() string {
 	return arrowBody + arrowEnd
 }
 
-type ParticipantMessage struct {
-	Participant *Node
+type Title struct {
+	simpleMessage
+}
+
+func (t Title) String() string {
+	return "title " + t.Msg
+}
+
+type Participant struct {
+	Self *Node
 	noMessage
 }
 
-func (pm ParticipantMessage) String() string {
-	return "participant " + pm.Participant.Name
+func (p Participant) String() string {
+	return "participant " + p.Self.Name
 }
 
 type SelfMessage struct {

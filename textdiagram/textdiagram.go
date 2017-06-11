@@ -13,6 +13,7 @@ type textDiagram struct {
 	offsets        []offset
 	lifelineToggle bool
 	text           string
+	title          string
 }
 
 // Decode creates an textual representation a sequence diagram using the
@@ -32,6 +33,9 @@ func Decode(sd *sequencediagram.Diagram) io.Reader {
 	}
 	td.drawFullLifeline()
 	td.addHeaders(nodes)
+	if td.title != "" {
+		td.text = symmetricPadToLength(td.title, ' ', td.offsets[len(td.offsets)-1].end) + "\n\n" + td.text
+	}
 	return strings.NewReader(td.text)
 }
 
@@ -71,10 +75,17 @@ func (td *textDiagram) paddingForMessage(message sequencediagram.Message) string
 
 // addMessage adds the message the as text to the ascii diagram
 func (td *textDiagram) addMessage(message sequencediagram.Message) {
+	if t, ok := message.(sequencediagram.Title); ok {
+		td.title = t.MessageText()
+		return
+	}
+	text := td.getMessageAsText(message)
+	if text == "" {
+		return
+	}
 	// pad with spaces
 	pad := td.paddingForMessage(message)
 
-	text := td.getMessageAsText(message)
 	for _, line := range strings.Split(text, "\n") {
 		//for each line, pad and draw life lines
 		line = td.fillInLifeline(pad+line, message)
