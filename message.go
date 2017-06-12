@@ -84,3 +84,24 @@ type BackwardMessage struct {
 func (bm BackwardMessage) String() string {
 	return fmt.Sprintf("%s%s%s:%s", bm.From.Name, bm.arrow(), bm.To.Name, bm.Msg)
 }
+
+type Side int
+
+const (
+	Left Side = iota
+	Right
+)
+
+type Note struct {
+	Node *Node
+	Side Side
+	simpleMessage
+}
+
+func (n Note) String() string {
+	side := "left"
+	if n.Side == Right {
+		side = "right"
+	}
+	return fmt.Sprintf("note %s of %s:%s", side, n.Node.Name, n.Msg)
+}

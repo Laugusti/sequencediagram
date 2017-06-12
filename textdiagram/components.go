@@ -16,6 +16,8 @@ const (
 	box_arrow_left   = "┤"
 	box_arrow_right  = "├"
 
+	alt_box_top_right = "╗"
+
 	arrow_start        = "──"
 	arrow_body         = "─"
 	arrow_forward_end  = "▶"
@@ -38,6 +40,9 @@ const (
 	loop_body_length             = 3
 	pad_between_loop_and_message = ""
 	loop_message_end_pad         = " "
+
+	pad_before_note = " "
+	pad_after_note  = " "
 )
 
 // boxString wraps s in a text box, padding to padToHeight if necessary
@@ -100,6 +105,19 @@ func messageBox(s string) string {
 			line = replaceAtRuneIndex(line, utf8.RuneCountInString(line)-1, box_arrow_right)
 			box[i] = replaceAtRuneIndex(line, 0, box_arrow_left)
 		}
+	}
+	return strings.Join(box, "\n")
+}
+
+// noteBox is similar boxString except for the top right corner and padding
+func noteBox(s string) string {
+	box := strings.Split(boxString(s, 0), "\n")
+	for i, line := range box {
+		if i == 0 {
+			line = replaceAtRuneIndex(line, utf8.RuneCountInString(line)-1, alt_box_top_right)
+		}
+		box[i] = pad_before_note + line
+
 	}
 	return strings.Join(box, "\n")
 }

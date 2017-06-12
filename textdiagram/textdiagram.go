@@ -47,7 +47,9 @@ func (td *textDiagram) addHeaders(nodes []*sequencediagram.Node) {
 	headers := make([]string, height+2)
 	for i, node := range nodes {
 		var pad string
-		if i != 0 {
+		if i == 0 {
+			pad = strings.Repeat(" ", td.offsets[i].begin)
+		} else {
 			// add padding using pre-calculated node offsets
 			pad = strings.Repeat(" ", td.offsets[i].begin-td.offsets[i-1].end-1)
 		}
@@ -64,11 +66,20 @@ func (td *textDiagram) paddingForMessage(message sequencediagram.Message) string
 	var pad string
 	switch message := message.(type) {
 	case sequencediagram.SelfMessage:
-		pad = strings.Repeat(" ", td.offsets[message.Self.Order].getMiddle()+utf8.RuneCountInString(box_vertical))
+		pad = strings.Repeat(" ", td.offsets[message.Self.Order].getMiddle()+utf8.RuneCountInString(life_line))
 	case sequencediagram.ForwardMessage:
-		pad = strings.Repeat(" ", td.offsets[message.From.Order].getMiddle()+utf8.RuneCountInString(box_vertical))
+		pad = strings.Repeat(" ", td.offsets[message.From.Order].getMiddle()+utf8.RuneCountInString(life_line))
 	case sequencediagram.BackwardMessage:
-		pad = strings.Repeat(" ", td.offsets[message.To.Order].getMiddle()+utf8.RuneCountInString(box_vertical))
+		pad = strings.Repeat(" ", td.offsets[message.To.Order].getMiddle()+utf8.RuneCountInString(life_line))
+	case sequencediagram.Note:
+		if message.Side == sequencediagram.Right {
+			pad = strings.Repeat(" ", td.offsets[message.Node.Order].getMiddle()+utf8.RuneCountInString(life_line))
+		} else {
+			if message.Node.Order > 0 {
+				length := utf8.RuneCountInString(pad_before_note+box_vertical+message.Msg+box_vertical+pad_after_note) + 2*box_inside_pad
+				pad = strings.Repeat(" ", td.offsets[message.Node.Order].getMiddle()-length)
+			}
+		}
 	}
 	return pad
 }
@@ -103,6 +114,8 @@ func (td *textDiagram) getMessageAsText(message sequencediagram.Message) string 
 		text = td.forwardMessageAsText(message)
 	case sequencediagram.BackwardMessage:
 		text = td.backwardMessageAsText(message)
+	case sequencediagram.Note:
+		text = noteBox(message.Msg)
 	}
 	return text
 }

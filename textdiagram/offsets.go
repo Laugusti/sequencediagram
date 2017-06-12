@@ -67,6 +67,11 @@ func calcShiftStartIndex(message sequencediagram.Message) int {
 		shiftStart = message.To.Order
 	case sequencediagram.BackwardMessage:
 		shiftStart = message.From.Order
+	case sequencediagram.Note:
+		shiftStart = message.Node.Order
+		if message.Side == sequencediagram.Right {
+			shiftStart += message.Node.Order + 1
+		}
 	}
 	return shiftStart
 }
@@ -114,22 +119,28 @@ func calcShift(message sequencediagram.Message, offsets []offset) int {
 		if length > diff {
 			shift = length - diff
 		}
+	case sequencediagram.Note:
+		length += utf8.RuneCountInString(pad_before_note+box_vertical+box_vertical+pad_after_note) + 2*box_inside_pad
+		var offset1, offset2 int
+		if message.Side == sequencediagram.Left {
+			if message.Node.Order == 0 {
+				offset1 = -1 // diff from 0 should be inclusive
+			} else {
+				offset1 = offsets[message.Node.Order-1].getMiddle()
+			}
+			offset2 = offsets[message.Node.Order].getMiddle()
+		} else {
+			offset1 = offsets[message.Node.Order].getMiddle()
+			offset2 = offsets[message.Node.Order+1].getMiddle()
+		}
+		diff := offset2 - offset1 - 1
+		if length > diff {
+			shift = length - diff
+		}
 	}
 	return shift
 }
 
-func getMessageText(message sequencediagram.Message) string {
-	switch message := message.(type) {
-	case sequencediagram.SelfMessage:
-		return message.Msg
-	case sequencediagram.ForwardMessage:
-		return message.Msg
-	case sequencediagram.BackwardMessage:
-		return message.Msg
-	}
-	return ""
-}
-
 func splitMessage(message sequencediagram.Message) []string {
-	return strings.Split(getMessageText(message), "\\n")
+	return strings.Split(message.MessageText(), "\\n")
 }
