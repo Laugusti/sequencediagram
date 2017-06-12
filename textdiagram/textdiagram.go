@@ -21,17 +21,16 @@ type textDiagram struct {
 func Decode(sd *sequencediagram.Diagram) io.Reader {
 	td := &textDiagram{}
 	td.offsets = calcOffsets(sd)
+	td.lifelineToggle = true
 
 	nodes := sd.GetOrderedNodes()
 	td.addHeaders(nodes)
-	td.drawFullLifeline()
 	for _, message := range sd.Messages() {
 		td.addMessage(message)
 	}
-	if !td.lifelineToggle {
-		td.text += "\n"
+	if td.lifelineToggle {
+		td.drawFullLifeline()
 	}
-	td.drawFullLifeline()
 	td.addHeaders(nodes)
 	if td.title != "" {
 		td.text = symmetricPadToLength(td.title, ' ', td.offsets[len(td.offsets)-1].end) + "\n\n" + td.text
@@ -122,7 +121,7 @@ func (td *textDiagram) getMessageAsText(message sequencediagram.Message) string 
 
 // returns the text representation of a 'to' message
 func (td *textDiagram) forwardMessageAsText(message sequencediagram.ForwardMessage) string {
-	var text string
+	var lines []string
 	for i, line := range strings.Split(messageBox(message.Msg), "\n") {
 		// add the arrow on the 2nd line
 		// length = to_lifeline_index - from_lifeline_index - line_length
@@ -132,13 +131,13 @@ func (td *textDiagram) forwardMessageAsText(message sequencediagram.ForwardMessa
 		} else {
 			line = strings.Repeat(" ", utf8.RuneCountInString(arrow_start)) + line
 		}
-		text += line + "\n"
+		lines = append(lines, line)
 	}
-	return text
+	return strings.Join(lines, "\n")
 }
 
 func (td *textDiagram) backwardMessageAsText(message sequencediagram.BackwardMessage) string {
-	var text string
+	var lines []string
 	msgBox := messageBox(message.Msg)
 	// length = from_lifeline_index - to_lifeline_index - line_length
 	arrowLength := getPadLength(td.offsets[message.To.Order].getMiddle(), td.offsets[message.From.Order].getMiddle(), arrow_backward_end+arrow_start) - runeIndex(msgBox, '\n')
@@ -149,9 +148,9 @@ func (td *textDiagram) backwardMessageAsText(message sequencediagram.BackwardMes
 		} else {
 			line = strings.Repeat(" ", arrowLength+utf8.RuneCountInString(arrow_backward_end)) + line
 		}
-		text += line + "\n"
+		lines = append(lines, line)
 	}
-	return text
+	return strings.Join(lines, "\n")
 }
 
 // add an arrow to the line
