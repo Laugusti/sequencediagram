@@ -33,7 +33,11 @@ func Decode(sd *sequencediagram.Diagram) io.Reader {
 	}
 	td.addHeaders(nodes)
 	if td.title != "" {
-		td.text = symmetricPadToLength(td.title, ' ', td.offsets[len(td.offsets)-1].end) + "\n\n" + td.text
+		if len(td.offsets) == 0 {
+			td.text = td.title + "\n\n"
+		} else {
+			td.text = symmetricPadToLength(td.title, ' ', td.offsets[len(td.offsets)-1].end) + "\n\n" + td.text
+		}
 	}
 	return strings.NewReader(td.text)
 }
