@@ -4,7 +4,7 @@ This package parses a string into a Sequence Diagram which can then be processed
 
 ## Usage
 
-```
+```go
 sd, err := sequencediagram.ParseFromText(text)
 if err != nil {
 	log.Fatalf("error parsing sequence diagram: %v", err)
@@ -19,8 +19,10 @@ if err != nil {
 - Message from A to B  
 `A->B:Message`
 - Message from A to B and response  
-`A->B:Message`  
-`B->A:Response`
+        ```
+A->B:Message  
+B->A:Response
+        ```
 - Message from A to self  
 `A->A:Message`
 - Note  
