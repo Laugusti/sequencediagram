@@ -1,0 +1,37 @@
+<html>
+<head>
+<title>Text Sequence Diagram</title>
+</head>
+<body>
+
+<p>Sequence Diagram</p>
+<div style="display:table;width:100%;height:100%">
+  <div style="display:table-cell;width:20%;height:inherit;">
+    <textarea id="text" oninput="sequenceDiagramFromText()" style="width:100%;height:inherit;"></textarea>
+    </br>
+    <span id="error" style="color:red"></span>
+  </div>
+  <div style="display:table-cell;width:80%;height:inherit;">
+    <textarea id="diagram" readonly style="width:100%;height:inherit;"></textarea>
+  </div>
+</div>
+
+<script>
+	function sequenceDiagramFromText() {
+		var xhr = new XMLHttpRequest()
+		xhr.open("POST", "/creatediagram")
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState == XMLHttpRequest.DONE) {
+				var result = JSON.parse(xhr.responseText)
+				document.getElementById('error').textContent = result.Error
+
+				if (result.Diagram) {
+					document.getElementById('diagram').textContent = result.Diagram
+				}
+			}
+		}
+		xhr.send(document.getElementById('text').value)
+	}
+</script>
+</body>
+</html>
