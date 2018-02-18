@@ -19,10 +19,9 @@ if err != nil {
 - Message from A to B  
 `A->B:Message`
 - Message from A to B and response  
+`A->B:Message
 
-        A->B:Message
-        B->A:Response
-
+B->A:Response`
 - Message from A to self  
 `A->A:Message`
 - Note  
