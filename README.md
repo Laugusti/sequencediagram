@@ -23,5 +23,9 @@ if err != nil {
 `B->A:Response`
 - Message from A to self  
 `A->A:Message`
+- Message with dotted arrow  
+`A-->B:Message`
+- Message with open arrow  
+`A->>B:Message`
 - Note  
 `note right of A:Note`
