@@ -13,15 +13,17 @@ if err != nil {
 
 ## Supported syntax
 - Create a Title
-	title My Title
+`title My Title`
 - Define a Participant
-	participant Participant1
+`participant Participant1`
 - Message from A to B
-	A->B:Message
+`A->B:Message`
 - Message from A to B and response
-	A->B:Message
-	B->A:Response
+```
+A->B:Message
+B->A:Response
+```
 - Message from A to self
-	A->A:Message
+`A->A:Message`
 - Note
-	note right of A:Note
+`note right of A:Note`
