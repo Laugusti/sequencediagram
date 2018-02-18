@@ -12,18 +12,18 @@ if err != nil {
 ```
 
 ## Supported syntax
-- Create a Title
+- Create a Title  
 `title My Title`
-- Define a Participant
+- Define a Participant  
 `participant Participant1`
-- Message from A to B
+- Message from A to B  
 `A->B:Message`
 - Message from A to B and response
 ```
 A->B:Message
 B->A:Response
 ```
-- Message from A to self
+- Message from A to self  
 `A->A:Message`
 - Note
 `note right of A:Note`
