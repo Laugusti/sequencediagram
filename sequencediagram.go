@@ -2,8 +2,8 @@
 package sequencediagram
 
 import (
-	"fmt"
 	"sort"
+	"strings"
 )
 
 type Node struct {
@@ -42,9 +42,12 @@ func (sd *Diagram) GetOrderedNodes() []*Node {
 
 // String returns the sequence diagram messages
 func (sd *Diagram) String() string {
-	var s string
-	for _, message := range sd.messages {
-		s += fmt.Sprintf("%s\n", message)
+	var s strings.Builder
+	for i, message := range sd.messages {
+		s.WriteString(message.String())
+		if i != len(sd.messages)-1 {
+			s.WriteString("\n")
+		}
 	}
-	return s
+	return s.String()
 }

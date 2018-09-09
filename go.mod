@@ -1,1 +1,1 @@
-module seqeuencediagram
+module github.com/Laugusti/sequencediagram
