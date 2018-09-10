@@ -57,7 +57,7 @@ func webServer() {
 			return
 		}
 		buf.Reset()
-		io.Copy(buf, textdiagram.Decode(sd))
+		io.Copy(buf, textdiagram.Encode(sd))
 		b, err := json.Marshal(result{buf.String(), ""})
 		if err != nil {
 			log.Printf("failed to marshal result: %v", err)
@@ -88,6 +88,6 @@ func commandLine() {
 		fmt.Println("\n")
 		// NOTE: ignoring errors
 		sd, _ = sequencediagram.ParseFromText(validLines)
-		io.Copy(os.Stdout, textdiagram.Decode(sd))
+		io.Copy(os.Stdout, textdiagram.Encode(sd))
 	}
 }
