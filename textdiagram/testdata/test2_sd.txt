@@ -1,0 +1,2 @@
+participant A
+note left of B:\n\n

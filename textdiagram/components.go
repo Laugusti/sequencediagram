@@ -64,7 +64,7 @@ func boxString(s string, padToHeight int) string {
 	}
 	// pad height if necessary
 	for i := len(lines); i < padToHeight; i++ {
-		content += box_vertical + strings.Repeat(box_horizontal, maxLength) + box_vertical + "\n"
+		content += box_vertical + strings.Repeat(" ", maxLength) + box_vertical + "\n"
 	}
 
 	// create box
@@ -100,12 +100,8 @@ func selfLoop(s string, altArrowBody, altArrowEnd bool) string {
 // messageBox is similar boxString except for the walls of the 2nd line
 func messageBox(s string) string {
 	box := strings.Split(boxString(s, 0), "\n")
-	for i, line := range box {
-		if i == 1 {
-			line = replaceAtRuneIndex(line, utf8.RuneCountInString(line)-1, box_arrow_right)
-			box[i] = replaceAtRuneIndex(line, 0, box_arrow_left)
-		}
-	}
+	box[1] = replaceAtRuneIndex(box[1], 0, box_arrow_left)
+	box[1] = replaceAtRuneIndex(box[1], utf8.RuneCountInString(box[1])-1, box_arrow_right)
 	return strings.Join(box, "\n")
 }
 

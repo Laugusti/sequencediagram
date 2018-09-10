@@ -1,0 +1,4 @@
+participant A
+participant B
+participant C
+note right of B:note

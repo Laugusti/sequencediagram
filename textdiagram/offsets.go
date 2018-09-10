@@ -23,13 +23,14 @@ func calcOffsets(sd *sequencediagram.Diagram) []offset {
 	offsets := make([]offset, len(nodes))
 	// calc minimum offsets between nodes
 	for i, node := range nodes {
-		// begin index is 0 for 1st node or the index of the last node + 1
+		// begin index is 0 for 1st node or the index of the previous node + 1
 		var begin int
 		if i > 0 {
 			begin = offsets[i-1].end + 1
 		}
 		// end index is begin + number of runes in box - 1
-		boxSize := utf8.RuneCountInString(box_vertical+node.Name+box_vertical) + 2*box_inside_pad
+		box := boxString(node.Name, 0)
+		boxSize := utf8.RuneCountInString(box[:strings.Index(box, "\n")])
 		end := begin + boxSize - 1
 		offsets[i] = offset{begin, end}
 	}
@@ -70,7 +71,7 @@ func calcShiftStartIndex(message sequencediagram.Message) int {
 	case sequencediagram.Note:
 		shiftStart = message.Node.Order
 		if message.Side == sequencediagram.Right {
-			shiftStart += message.Node.Order + 1
+			shiftStart += 1
 		}
 	}
 	return shiftStart

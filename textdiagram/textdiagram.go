@@ -16,34 +16,44 @@ type textDiagram struct {
 	title          string
 }
 
-// Decode creates an textual representation a sequence diagram using the
+// Encode creates an textual representation a sequence diagram using the
 // provided sequence diagram
-func Decode(sd *sequencediagram.Diagram) io.Reader {
+func Encode(sd *sequencediagram.Diagram) io.Reader {
 	td := &textDiagram{}
 	td.offsets = calcOffsets(sd)
 	td.lifelineToggle = true
 
 	nodes := sd.GetOrderedNodes()
-	td.addHeaders(nodes)
+	td.addHeaders(nodes, true)
 	for _, message := range sd.Messages() {
 		td.addMessage(message)
 	}
 	if td.lifelineToggle {
 		td.drawFullLifeline()
 	}
-	td.addHeaders(nodes)
-	if td.title != "" {
-		if len(td.offsets) == 0 {
-			td.text = td.title + "\n\n"
-		} else {
-			td.text = symmetricPadToLength(td.title, ' ', td.offsets[len(td.offsets)-1].end) + "\n\n" + td.text
-		}
-	}
+	td.addHeaders(nodes, false)
+	fixTitle(td)
 	return strings.NewReader(td.text)
 }
 
+func fixTitle(td *textDiagram) {
+	if td.title == "" {
+		return
+	}
+	// split title on "\n"
+	title := strings.Split(td.title, "\\n")
+	// if there are nodes, center title
+	if len(td.offsets) > 0 {
+		length := td.offsets[len(td.offsets)-1].end
+		for i := range title {
+			title[i] = symmetricPadToLength(title[i], ' ', length)
+		}
+	}
+	td.text = strings.Join(title, "\n") + "\n\n" + td.text
+}
+
 // addHeaders add the Node slice as text to the ascii diagram
-func (td *textDiagram) addHeaders(nodes []*sequencediagram.Node) {
+func (td *textDiagram) addHeaders(nodes []*sequencediagram.Node, newline bool) {
 	// get max # of lines in Node Name
 	height := headerBoxHeight(nodes)
 	// headers will have max + 2 lines (top + #lines + bottom)
@@ -62,7 +72,10 @@ func (td *textDiagram) addHeaders(nodes []*sequencediagram.Node) {
 			headers[j] += pad + line
 		}
 	}
-	td.text += strings.Join(headers, "\n") + "\n"
+	td.text += strings.Join(headers, "\n")
+	if newline {
+		td.text += "\n"
+	}
 }
 
 func (td *textDiagram) paddingForMessage(message sequencediagram.Message) string {
@@ -79,7 +92,8 @@ func (td *textDiagram) paddingForMessage(message sequencediagram.Message) string
 			pad = strings.Repeat(" ", td.offsets[message.Node.Order].getMiddle()+utf8.RuneCountInString(life_line))
 		} else {
 			if message.Node.Order > 0 {
-				length := utf8.RuneCountInString(pad_before_note+box_vertical+message.Msg+box_vertical+pad_after_note) + 2*box_inside_pad
+				box := noteBox(message.Msg)
+				length := utf8.RuneCountInString(pad_before_note + box[:strings.Index(box, "\n")])
 				pad = strings.Repeat(" ", td.offsets[message.Node.Order].getMiddle()-length)
 			}
 		}
