@@ -1,0 +1,4 @@
+github.com/Laugusti/sequencediagram v0.0.3 h1:FsR9Re2g+bxRWYAAhQn10dH1uBKhl/Il+FYeimkUhvU=
+github.com/Laugusti/sequencediagram v0.0.3/go.mod h1:BzClckPusgZUwmdlUhA6FzYRM8E+MBGp3UKvJrkhbI0=
+github.com/Laugusti/sequencediagram/textdiagram v0.0.0-20180910194023-88ec69161d3c h1:wBg2NSOVey2xN2lSUnjhLynOSKGSz3Gx80psYcwHASw=
+github.com/Laugusti/sequencediagram/textdiagram v0.0.0-20180910194023-88ec69161d3c/go.mod h1:hvEFzD4KaGISATEwfBTF4TVIVf6DbcUf48gXhWguwUE=
